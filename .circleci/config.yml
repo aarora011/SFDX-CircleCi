@@ -23,14 +23,18 @@ jobs:
           command: |
               git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
               git fetch --all
-              echo current **${CIRCLE_BRANCH}**
+              echo current **  ${CIRCLE_BRANCH}  **
               git --no-pager diff --name-status ${CIRCLE_BRANCH} origin/master
               sfdx sgd:source:delta --to ${CIRCLE_BRANCH} --from origin/master --repo . --output .
-              cat package/package.xml 
+              cat package/package.xml
+              
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   validate-workflow:
     jobs:
-      - validate
+      - validate:
+          filters:
+            branches:
+              only: /feature\/.*/
