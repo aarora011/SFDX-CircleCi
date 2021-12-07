@@ -27,7 +27,9 @@ jobs:
               git --no-pager diff --name-status ${CIRCLE_BRANCH} origin/master
               sfdx sgd:source:delta --to ${CIRCLE_BRANCH} --from origin/master --repo . --output .
               cat package/package.xml
-              sfdx force:source:deploy -c -u testorg -x package/package.xml -w 30
+              chmod +x ./build/testclass.sh ./build/validate.sh
+              ./build/testclass.sh > result.txt
+              ./build/validate.sh
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
