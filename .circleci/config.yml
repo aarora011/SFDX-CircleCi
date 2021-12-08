@@ -56,6 +56,11 @@ jobs:
               chmod +x ./build/testclass.sh ./build/deploy.sh
               ./build/testclass.sh > result.txt
               ./build/deploy.sh
+      - run:
+          name: "create tag"
+          command: |
+               git tag master-$(date +"%Y%m%d%H%M%S")
+               git push --tags
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
