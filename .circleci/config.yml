@@ -32,6 +32,33 @@ jobs:
               ./build/testclass.sh > result.txt
               ./build/validate.sh
 
+  deploy:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    docker:
+      - image: anish0613/sfdx-docker-img:latest
+    working_directory: ~/force-app
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    steps:
+      - checkout
+      - run:
+          name: "Authorise org"
+          command: >
+              sfdx force:auth:jwt:grant --clientid ${SFDC_CLIENTID_master} --jwtkeyfile ${SFDC_SERVERKEY} --username ${SFDC_USERNAME_master} --instanceurl ${SFDC_SERVERURL} --setalias masterorg
+      - run:
+          name: "Deploy to org"
+          command: |
+              git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+              git fetch --all
+              echo current ${CIRCLE_BRANCH}
+              git --no-pager diff --name-status ${CIRCLE_BRANCH} origin/master
+              sfdx sgd:source:delta --to ${CIRCLE_BRANCH} --from origin/master --repo . --output .
+              cat package/package.xml
+              chmod +x ./build/testclass.sh ./build/deploy.sh
+              ./build/testclass.sh > result.txt
+              ./build/deploy.sh
+
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
@@ -41,3 +68,7 @@ workflows:
           filters:
             branches:
               only: /feature\/.*/
+      - deploy:
+          filters:
+            branches:
+              only: master
